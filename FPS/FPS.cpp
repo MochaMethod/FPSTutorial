@@ -12,15 +12,16 @@ using namespace std;
 int nScreenWidth = 120;
 int nScreenHeight = 40;
 
-float fPlayerX = 8.0f;
-float fPlayerY = 8.0f;
+float fPlayerX = 5.0f;
+float fPlayerY = 5.0f;
 float fPlayerA = 0.0f;
 
 int nMapWidth = 16;
 int nMapHeight = 16;
 
-float fFOV = 3.13159f / 4.0f;
+float fFOV = 3.13159f / 1.5f;
 float fDepth = 16.0f;
+float fSpeed = 4.0f;
 
 int main()
 {
@@ -37,18 +38,18 @@ int main()
 	DWORD dwBytesWritten = 0;
 
 	wstring map;
-	map += L"#########.......";
+	map += L"#########...####";
 	map += L"#...............";
-	map += L"#.......########";
 	map += L"#..............#";
-	map += L"#......##......#";
-	map += L"#......##......#";
 	map += L"#..............#";
-	map += L"###............#";
-	map += L"##.............#";
-	map += L"#......####..###";
-	map += L"#......#.......#";
-	map += L"#......#.......#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#......#########";
+	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#......#########";
 	map += L"#..............#";
@@ -67,32 +68,32 @@ int main()
 
 		// Player controls and rotation
 		if (GetAsyncKeyState((unsigned short)'A') & 0x8000) {
-			fPlayerA -= (0.8f) * fElapsedTime;
+			fPlayerA -= (fSpeed * 0.75f) * fElapsedTime;
 		}
 
 		if (GetAsyncKeyState((unsigned short)'D') & 0x8000) {
-			fPlayerA += (0.8f) * fElapsedTime;
+			fPlayerA += (fSpeed * 0.75f) * fElapsedTime;
 		}
 
 		if (GetAsyncKeyState((unsigned short)'W') & 0x8000) {
-			fPlayerX += sinf(fPlayerA) * 5.0f * fElapsedTime;
-			fPlayerY += cosf(fPlayerA) * 5.0f * fElapsedTime;
+			fPlayerX += sinf(fPlayerA) * fSpeed * fElapsedTime;
+			fPlayerY += cosf(fPlayerA) * fSpeed * fElapsedTime;
 
 			// Check if player collides with wall
-			if (map.c_str()[(int)fPlayerY * nMapWidth + (int)fPlayerX] == '#') {
-				fPlayerX -= sinf(fPlayerA) * 5.0f * fElapsedTime;
-				fPlayerX -= cosf(fPlayerA) * 5.0f * fElapsedTime;
+			if (map.c_str()[(int)fPlayerX * nMapWidth + (int)fPlayerY] == '#') {
+				fPlayerX -= sinf(fPlayerA) * fSpeed * fElapsedTime;
+				fPlayerX -= cosf(fPlayerA) * fSpeed * fElapsedTime;
 			}
 		}
 
 		if (GetAsyncKeyState((unsigned short)'S') & 0x8000) {
-			fPlayerX -= sinf(fPlayerA) * 5.0f * fElapsedTime;
-			fPlayerY -= cosf(fPlayerA) * 5.0f * fElapsedTime;
+			fPlayerX -= sinf(fPlayerA) * fSpeed * fElapsedTime;
+			fPlayerY -= cosf(fPlayerA) * fSpeed * fElapsedTime;
 
 			// Check if player collides with wall
-			if (map.c_str()[(int)fPlayerY * nMapWidth + (int)fPlayerX] == '#') {
-				fPlayerX += sinf(fPlayerA) * 5.0f * fElapsedTime;
-				fPlayerX += cosf(fPlayerA) * 5.0f * fElapsedTime;
+			if (map.c_str()[(int)fPlayerX * nMapWidth + (int)fPlayerY] == '#') {
+				fPlayerX += sinf(fPlayerA) * fSpeed * fElapsedTime;
+				fPlayerX += cosf(fPlayerA) * fSpeed * fElapsedTime;
 			}
 		}
 
@@ -161,9 +162,9 @@ int main()
 							bBoundary = true;
 						}
 
-						if (acos(p.at(2).second) < fBound) {
+						/*if (acos(p.at(2).second) < fBound) {
 							bBoundary = true;
-						}
+						}*/
 					}
 				}
 			}
