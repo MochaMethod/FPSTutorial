@@ -37,20 +37,20 @@ int main()
 	DWORD dwBytesWritten = 0;
 
 	wstring map;
-	map += L"################";
+	map += L"#########.......";
+	map += L"#...............";
+	map += L"#.......########";
 	map += L"#..............#";
-	map += L"#..........##..#";
+	map += L"#......##......#";
+	map += L"#......##......#";
 	map += L"#..............#";
+	map += L"###............#";
+	map += L"##.............#";
+	map += L"#......####..###";
+	map += L"#......#.......#";
+	map += L"#......#.......#";
 	map += L"#..............#";
-	map += L"#..####........#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"###......#######";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"######.........#";
+	map += L"#......#########";
 	map += L"#..............#";
 	map += L"################";
 
@@ -124,6 +124,46 @@ int main()
 					if (map[nTestY * nMapWidth + nTestX] == '#') {
 						bHitWall = true;
 
+						vector<pair<float, float>> p; // disatnce
+
+						for (int tx = 0; tx < 2; ++tx) {
+							for (int ty = 0; ty < 2; ++ty) {
+								float vx = (float)nTestY + tx - fPlayerX;
+								float vy = (float)nTestY + ty - fPlayerY;
+
+								// Calculate how far away the corner is from the player
+								float d = sqrt(vx * vx + vy * vy);
+
+								// Calculate corner dot using rays
+								float dot = (fEyeX * vx / d) + (fEyeY * vy / d);
+								
+								p.push_back(make_pair(d, dot));
+							}
+						}
+						// Sort distance and dot pairs from closest to farthest
+						sort(
+							p.begin(), p.end(),
+							[](const pair<float, float> &left,
+							const pair<float, float> &right)
+							{
+								return left.first < right.first;
+							}
+						);
+
+
+						float fBound = 0.01f;
+
+						if (acos(p.at(0).second) < fBound) {
+							bBoundary = true;
+						}
+
+						if (acos(p.at(1).second) < fBound) {
+							bBoundary = true;
+						}
+
+						if (acos(p.at(2).second) < fBound) {
+							bBoundary = true;
+						}
 					}
 				}
 			}
@@ -152,6 +192,10 @@ int main()
 				wShade = ' ';
 			}
 
+			if (bBoundary) {
+				wShade = ' ';
+			}
+
 			for (int j = 0; j < nScreenHeight; ++j) {
 				if (j < nCeiling) {
 					screen[j * nScreenWidth + i] = ' ';
@@ -159,6 +203,8 @@ int main()
 				else if (j > nCeiling && j <= nFloor) {
 					screen[j * nScreenWidth + i] = wShade;
 				}
+
+				// Shade floor based on screen height
 				else {
 					float b = 1.0f - (((float)j - nScreenHeight / 2.0f) / ((float)nScreenHeight / 2.0f));
 
