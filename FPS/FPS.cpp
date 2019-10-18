@@ -229,6 +229,16 @@ int main()
 			}	
 		}
 
+		swprintf_s(screen, 40, L"X=%3.2f, Y=%3.2f, A=%3.2f FPS=%3.2f ", fPlayerX, fPlayerY, fPlayerA, 1.0f / fElapsedTime);
+
+		for (int nx = 0; nx < nMapWidth; ++nx) {
+			for (int ny = 0; ny < nMapWidth; ++ny) {
+				screen[(ny + 1) * nScreenWidth + nx] = map[ny * nMapWidth + (nMapWidth - nx - 1)];
+			}
+		}
+
+		screen[((int)fPlayerY + 1) * nScreenWidth + (int)(nMapWidth - fPlayerX)] = 'P';
+
 		screen[nScreenWidth * nScreenHeight - 1] = '\0';
 		WriteConsoleOutputCharacter(
 			hConsole,
