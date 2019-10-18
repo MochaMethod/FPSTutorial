@@ -38,20 +38,20 @@ int main()
 
 	wstring map;
 	map += L"################";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
-	map += L"#              #";
+	map += L"#..............#";
+	map += L"#..........##..#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..####........#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"###......#######";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"######.........#";
+	map += L"#..............#";
 	map += L"################";
 
 	auto tp1 = chrono::system_clock::now();
@@ -67,21 +67,33 @@ int main()
 
 		// Player controls and rotation
 		if (GetAsyncKeyState((unsigned short)'A') & 0x8000) {
-			fPlayerA -= (0.1f) * fElapsedTime;
+			fPlayerA -= (0.8f) * fElapsedTime;
 		}
 
 		if (GetAsyncKeyState((unsigned short)'D') & 0x8000) {
-			fPlayerA += (0.1f) * fElapsedTime;
+			fPlayerA += (0.8f) * fElapsedTime;
 		}
 
 		if (GetAsyncKeyState((unsigned short)'W') & 0x8000) {
 			fPlayerX += sinf(fPlayerA) * 5.0f * fElapsedTime;
-			fPlayerX += cosf(fPlayerA) * 5.0f * fElapsedTime;
+			fPlayerY += cosf(fPlayerA) * 5.0f * fElapsedTime;
+
+			// Check if player collides with wall
+			if (map.c_str()[(int)fPlayerY * nMapWidth + (int)fPlayerX] == '#') {
+				fPlayerX -= sinf(fPlayerA) * 5.0f * fElapsedTime;
+				fPlayerX -= cosf(fPlayerA) * 5.0f * fElapsedTime;
+			}
 		}
 
 		if (GetAsyncKeyState((unsigned short)'S') & 0x8000) {
 			fPlayerX -= sinf(fPlayerA) * 5.0f * fElapsedTime;
-			fPlayerX -= cosf(fPlayerA) * 5.0f * fElapsedTime;
+			fPlayerY -= cosf(fPlayerA) * 5.0f * fElapsedTime;
+
+			// Check if player collides with wall
+			if (map.c_str()[(int)fPlayerY * nMapWidth + (int)fPlayerX] == '#') {
+				fPlayerX += sinf(fPlayerA) * 5.0f * fElapsedTime;
+				fPlayerX += cosf(fPlayerA) * 5.0f * fElapsedTime;
+			}
 		}
 
 		for (int i = 0; i < nScreenWidth; ++i) {
@@ -91,6 +103,7 @@ int main()
 				);
 			float fDistanceToWall = 0.0f;
 			bool bHitWall = false;
+			bool bBoundary = false;
 
 			// Unit vector for ray within the player's space
 			float fEyeX = sinf(fRayAngle);
@@ -110,6 +123,7 @@ int main()
 				else {
 					if (map[nTestY * nMapWidth + nTestX] == '#') {
 						bHitWall = true;
+
 					}
 				}
 			}
@@ -118,23 +132,24 @@ int main()
 			int nCeiling = (float)(nScreenHeight / 2.0) - nScreenHeight / ((float)fDistanceToWall);
 			int nFloor = nScreenHeight - nCeiling;
 
-			short nShade = ' ';
+			short wShade = ' ';
+			short fShade = ' ';
 
 			// Shade walls based on distance
 			if (fDistanceToWall <= fDepth / 4.0f) {
-				nShade = 0x2588; // Closest to wall
+				wShade = 0x2588; // Closest to wall
 			}
 			else if (fDistanceToWall < fDepth / 3.0f) {
-				nShade = 0x2593; 
+				wShade = 0x2593; 
 			}
 			else if (fDistanceToWall < fDepth / 2.0f) {
-				nShade = 0x2592;
+				wShade = 0x2592;
 			} 
 			else if (fDistanceToWall < fDepth) {
-				nShade = 0x2591;
+				wShade = 0x2591;
 			}
 			else {
-				nShade = ' ';
+				wShade = ' ';
 			}
 
 			for (int j = 0; j < nScreenHeight; ++j) {
@@ -142,10 +157,28 @@ int main()
 					screen[j * nScreenWidth + i] = ' ';
 				}
 				else if (j > nCeiling && j <= nFloor) {
-					screen[j * nScreenWidth + i] = nShade;
+					screen[j * nScreenWidth + i] = wShade;
 				}
 				else {
-					screen[j * nScreenWidth + i] = ' ';
+					float b = 1.0f - (((float)j - nScreenHeight / 2.0f) / ((float)nScreenHeight / 2.0f));
+
+					if (b < 0.25f) {
+						fShade = '#';
+					}
+					else if (b < 0.5) {
+						fShade = '=';
+					}
+					else if (b < 0.75) {
+						fShade = '-';
+					}
+					else if (b < 0.9) {
+						fShade = '.';
+					}
+					else {
+						fShade = ' ';
+					}
+
+					screen[j * nScreenWidth + i] = fShade;
 				}
 			}	
 		}
